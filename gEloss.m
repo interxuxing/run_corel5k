@@ -16,3 +16,5 @@ function [eloss, geloss] = gEloss(old_G, D_target, D_imposter, V_target, V_impos
 %
 % Author: Xing Xu (xing.xu@ieee.org)
 % Date: 2013.5.15
+
+%mex -DNAN_EQUALS_ZERO -g -largeArrayDims gEloss.c

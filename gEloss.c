@@ -61,8 +61,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 			*ptr_target_V, *ptr_imposter_D, *ptr_imposter_V;
    
 /* Check for proper number of input and output arguments. */    
-  if (nrhs != 2) {
-    mexErrMsgTxt("Two input arguments required.");
+  if (nrhs != 6) {
+    mexErrMsgTxt("Six input arguments required.");
   } 
   if (nlhs > 2) {
     mexErrMsgTxt("Too many output arguments.");
@@ -80,15 +80,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   
   // get dim of target and imposter samples
-  dim_target = mxGetN(TARGET_IN);
-  dim_imposter = mxGetN(IMPOSTER_IN);
+  dim_target = mxGetN(V_TARGET_IN);
+  dim_imposter = mxGetN(V_IMPOSTER_IN);
   
   if (dim_target != dim_imposter){
 	mexErrMsgTxt(" Dim of target and imposter should be the same!\n");
   }
   // get numbers of target and imposter samples
-  num_target = mxGetM(TARGET_IN);
-  num_imposter = mxGetM(IMPOSTER_IN);
+  num_target = mxGetM(V_TARGET_IN);
+  num_imposter = mxGetM(V_IMPOSTER_IN);
 
   // create memory for output gEloss
   gEloss_OUT = mxCreateDoubleMatrix(1, dim_target, mxREAL);
@@ -109,23 +109,23 @@ void mexFunction(int nlhs, mxArray *plhs[],
   ptr_target_V = (double *)mxGetPr(V_TARGET_IN);
   ptr_imposter_V = (double *)mxGetPr(V_IMPOSTER_IN);
   
-  mexPrintf("Now caculate the loss and gradient for given tripples: \n");
-  mexPrintf("Target samples: %d, imposter samples: %d, with dimension %d \n", 
+   mexPrintf("Now caculate the loss and gradient for given tripples: \n");
+   mexPrintf("Target samples: %d, imposter samples: %d, with dimension %d \n\n", 
 			num_target, num_imposter, dim_target);
   
   // calculate loss
   for (i = 0; i < num_target; i++){
 	// add the first part (eloss)
-	ptr_Eloss += mu_target * ptr_target_D[i];
+	*ptr_Eloss += mu_target * ptr_target_D[i];
 	for (j = 0; j < num_imposter; j++){
 		dHingeloss = 1 + ptr_target_D[i] - ptr_imposter_D[j];
 		if(dHingeloss > 0){
-			ptr_Eloss += mu_imposter * dHingeloss;
+			*ptr_Eloss += mu_imposter * dHingeloss;
 		}
 	}
   }
   
-  mexPrintf("calculate loss value finished! \n");
+  // mexPrintf("calculate loss value finished! \n");
   
   // calculate gradient
 	  for (i = 0; i < num_target; i++){

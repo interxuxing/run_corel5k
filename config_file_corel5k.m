@@ -42,6 +42,8 @@ Global.Feature_Scale = 'scale';
 %% learn method
 Global.Learn_method = 4;
 
+
+Global.Max_Iteration = 500;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% INITIAL ADDITIONAL PATH
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

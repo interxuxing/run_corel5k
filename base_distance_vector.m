@@ -46,7 +46,7 @@ X1_GIST = sample_vector.GIST;
 X2_GIST = set_vector.GIST;
 [sample_num, feature_dim] = size(X2_GIST);
 X1_GIST_rep = repmat(X1_GIST,sample_num,1); %sample_num x X1_HSV
-X_GIST = (X1_GIST_rep - X2_GIST).^2
+X_GIST = (X1_GIST_rep - X2_GIST).^2;
 %X_GIST = sqrt(X_GIST);
 
 
