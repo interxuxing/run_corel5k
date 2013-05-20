@@ -108,11 +108,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
   
   ptr_target_V = (double *)mxGetPr(V_TARGET_IN);
   ptr_imposter_V = (double *)mxGetPr(V_IMPOSTER_IN);
-  
-   mexPrintf("Now caculate the loss and gradient for given tripples: \n");
-   mexPrintf("Target samples: %d, imposter samples: %d, with dimension %d \n\n", 
+ 
+  #if MEX_DEBUG
+   mexPrintf("------- Now caculate the loss and gradient for given tripples: \n");
+   mexPrintf("-----Target samples: %d, imposter samples: %d, with dimension %d \n\n", 
 			num_target, num_imposter, dim_target);
-  
+  #endif
   // calculate loss
   for (i = 0; i < num_target; i++){
 	// add the first part (eloss)
@@ -145,5 +146,5 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	  }
   }
   
-  mexPrintf("calculate gradient finished! \n");
+  // mexPrintf("calculate gradient finished! \n");
 }

@@ -30,6 +30,8 @@ learned_model_name = [];
 MULTIPLE_FEATURE_DIM = 13900;
 Max_iter = Global.Max_Iteration;
 
+MODEL_LMNN_DIR = 'D:\workspace-limu\cloud disk\Dropbox\limu\lmnn_model';
+
 %% now learn metric for each label
 for i = 1:L
     fprintf('learn metric for label %d\n',i);
@@ -38,61 +40,101 @@ for i = 1:L
     
     %initial eloss and geloss
     
-    eta = 0.01;
+    eta = 1;
     tol = 1e-3;
-    prev_Eloss = 1e+10;
+    prev_Eloss = Inf;
+    best_Eloss = Inf;
     W = ones(1, MULTIPLE_FEATURE_DIM);
-    
+    best_W = W;
     % Perform main learning iterations
     iter = 1;
 %     prev_Eloss - Eloss > tol || 
+
+    tstart = tic;
     while (iter < Max_iter)
         
         N = 0;
-        Eloss = 0;
         gEloss = zeros(1, MULTIPLE_FEATURE_DIM); 
         
+        label_pairs_dir = LABEL_PAIRS_DIR;
         if exist(fullfile(LABEL_PAIRS_DIR, 'train', label_dir),'dir')
             sample_index = seman_group_subset.label_img_index{i};
-
+            num_samples = length(sample_index);
+            %pre allocate 
+            sample_gEloss = zeros(length(sample_index),MULTIPLE_FEATURE_DIM);
+            sample_eloss = zeros(length(sample_index), 1);
             %% loop for each sample to update the loss and gradient
-            for s = 1 : length(sample_index)
+            STEP = floor(num_samples / 5);
+            
+            parfor s = 1 : num_samples
                 %first get the target and imposter for s-th sample
-                [inxa, inxb, matches] = sample_target_imposters(LABEL_PAIRS_DIR, label_dir, sample_index(s));
+                [inxa, inxb, matches] = sample_target_imposters(label_pairs_dir, label_dir, sample_index(s));
 
                 %update eloss geloss for each sample
-                [eloss, gEloss] = sample_update_gradient(X_full, inxa, inxb, matches, gEloss, W);
+                [sample_eloss(s), sample_gEloss(s,:)] = sample_update_gradient(X_full, inxa, inxb, matches, gEloss, W);
                 % sum each sample's eloss
-                Eloss = Eloss + eloss;
+
                 N = N + length(inxa);
+                
+                if(mod(s, STEP) == 0)
+                    fprintf('...... finished %d-th sample in total %d samples ....... \n', s, num_samples);
+                end
             end
-            
+            Eloss = sum(sample_eloss,1);
+            gEloss = sum(sample_gEloss,1);
             %update W
-%             W = W - (eta ./ N) .* gEloss;
-            W = W - (eta / iter) .* gEloss;
+            W = W + (eta ./ N) .* gEloss;
             
             if prev_Eloss > Eloss
-                eta = eta * 1.01;
-                best_W = W;
-                best_Eloss = Eloss;
+                eta = eta * 1.1;
             else
-                eta = eta * .5;
+                eta = eta * .8;
             end
             
             prev_Eloss = Eloss;
+            
+            if Eloss < best_Eloss
+                best_W = W;
+                best_Eloss = Eloss;
+            else
+                fprintf('break point happend at %d-th iteration, stop iteration, return best metric! \n', iter);
+                break;
+            end
+            
+            fprintf('the %d-th iteration, Eloss: %f \n', iter, Eloss);
         else
-            error('can not find file!');
-            label_model(i).M = [];
-            label_model(i).t = 0;
+            fprintf('there is no samples for label %d, quit!', i);
+%             label_model(i).M = [];
+%             label_model(i).t = 0;
+            break;
         end
     
         iter = iter + 1;
     end
-    
+    ellipse_time = toc(tstart);
+    fprintf('Iteration finished! Using time: %f \n' ,ellipse_time);
     % Return best metric
+    label_model(i).M = best_W;
+    label_model(i).t = ellipse_time;
     
+    % save learned parameters for each label in the public dropbox dir
+    model_dir = 'label_basedLMNN';
+    if ~exist(fullfile(MODEL_LMNN_DIR, model_dir), 'dir')
+        mkdir(fullfile(MODEL_LMNN_DIR, model_dir));
+    end
+    label_i_model = sprintf('label_%d_W.mat',i);
+    save(fullfile(MODEL_LMNN_DIR, model_dir, label_i_model), 'best_W', 'ellipse_time');
 end
 
+%% set model name, save in local dir
+model_dir = 'label_basedLMNN';
+learned_model_name = 'label_basedLMNN.mat';
+    
+if ~exist(fullfile(MODEL_DIR, model_dir), 'dir')
+    mkdir(fullfile(MODEL_DIR, model_dir));
+end
+
+save(fullfile(MODEL_DIR, model_dir, learned_model_name), 'label_model');
 
 end
 
@@ -167,8 +209,8 @@ V_imposter = Dist(matches ~= 1, :);
 D_imposter = sum(V_imposter, 2);
 
 mu = 0.5;
-eloss = 0;
-geloss = zeros(1,MULTIPLE_FEATURE_DIM);
+% eloss = 0;
+% geloss = zeros(1,MULTIPLE_FEATURE_DIM);
 
 [eloss, geloss] = gEloss(old_geloss, D_target, D_imposter, V_target, V_imposter, mu);
 
