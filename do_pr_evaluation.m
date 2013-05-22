@@ -12,14 +12,16 @@ word_matrix_gt = double(vec_read(fullfile(IMAGE_ANNOTATION_DIR, 'corel5k_test_an
 
 %load predict test annotation;
 if Global.Learn_method == 4
-     model_dir = 'label_basedLRLINEAR';
+    model_dir = 'label_basedLRLINEAR';
+elseif Global.Learn_method == 6
+    model_dir = 'label_basedLMNN';
 end
 % load(fullfile(MODEL_DIR, model_dir, 'predict_test_tagprop.mat'));
 load(fullfile(MODEL_DIR, model_dir, 'predict_test.mat'));
 [document_number, N] = size(word_matrix_gt);
 
-% word_matrix_predict = anno_score;
-word_matrix_predict = anno_score_decvalue;
+word_matrix_predict = anno_score;
+% word_matrix_predict = anno_score_decvalue;
 %get top-5 word as final text word
 [prob_value, prob_index] = sort(word_matrix_predict,2,'descend');
 prob_index_tp5 = prob_index(:,1:5);

@@ -31,8 +31,9 @@ Global.Image_File_Name = 'image_';
 Global.Image_Extension = '.jpg';
 Global.Train_Feature_Dir = 'train_feature';
 Global.Test_Dir = 'test';
-Global.Test_Neighbors = 30;
-Global.Metric = 'base';
+Global.Test_Neighbors = 0;
+% Global.Metric: label-basedLRLINEAR, label_basedLMNN, base
+Global.Metric = 'label-basedLMNN';
 Global.Random_Rate = 1.0;
 
 %% multiple feature extraction (train, train_subset, test)
@@ -40,7 +41,8 @@ Global.Multiple_Feature = 'test';
 %% multiple feature scale type (normalize, scale)
 Global.Feature_Scale = 'scale'; 
 %% learn method
-Global.Learn_method = 4;
+% 4, label-based liblinear 6, label-based lmnn
+Global.Learn_method = 6;
 
 
 Global.Max_Iteration = 500;

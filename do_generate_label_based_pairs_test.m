@@ -27,15 +27,19 @@ function do_generate_label_based_pairs_test(config_file)
     load(fullfile(RUN_DIR, Global.Train_Feature_Dir, 'train_multifeature_corel5k.mat'));
     load(fullfile(RUN_DIR, Global.Test_Dir, 'test_multifeature_corel5k.mat'));
     
-    N1 = 4;
+    N1 = 2;
     
     tstart = tic;
     
     %select semantic neighbors for each test image
-    if strcmp(Global.Metric, 'label-based')
+    if strcmp(Global.Metric, 'label-basedLRLINEAR')
             addpath(genpath('D:\workspace-limu\image annotation\iciap2013\KISSME\toolbox\lib\liblinear-1.92'));
             model_dir = 'label_basedLRLINEAR';
             learned_model_name = 'label_basedLRLINEAR.mat';
+            load(fullfile(MODEL_DIR, model_dir, learned_model_name));
+    elseif strcmp(Global.Metric, 'label-basedLMNN')
+            model_dir = 'label_basedLMNN';
+            learned_model_name = 'label_basedLMNN.mat';
             load(fullfile(MODEL_DIR, model_dir, learned_model_name));
     end
     
@@ -44,10 +48,11 @@ function do_generate_label_based_pairs_test(config_file)
         sample_vector = extract_set_samples(d, test_samples);      
         test_sample_pairs{d} = [];
          
-        if strcmp(Global.Metric, 'label-based')
+        if (strcmp(Global.Metric, 'label-basedLRLINEAR'))
         %select N1 inter simimilar pairs in each label
-            %add liblinear path  
-            [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, train_samples, seman_group_subset, N1, [1:W], 0, label_model);  
+            [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, train_samples, seman_group_subset, N1, [1:W], 0, label_model, 1);  
+        elseif (strcmp(Global.Metric, 'label-basedLMNN'))
+            [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, train_samples, seman_group_subset, N1, [1:W], 0, label_model, 2); 
         elseif strcmp(Global.Metric, 'base')
             [sim_index, dist_score] = select_all_neighbors(sample_vector, train_samples, seman_group_subset, N1, [1:W], 0); 
         else
@@ -148,7 +153,7 @@ end
 
 
 %% this function is to select N1 neighbors in each label_index, and preserved final N2 neighbors
-function [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, train_samples, semantic_group, N1, label_index, N2, metric_models)
+function [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, train_samples, semantic_group, N1, label_index, N2, metric_models, metric_type)
     distance_intra_label_index = [];
     distance_intra_label_score = [];
     sim_index = [];
@@ -162,9 +167,16 @@ function [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, tr
             set_vector = extract_set_samples(w_index, train_samples);
             distance_vectors = base_distance_vector(sample_vector, set_vector);
             
-            [predict_labels, accuracy, dec_value] = predict(ones(length(w_index),1), sparse(distance_vectors), metric_models(w).M, '-q');
+            if(metric_type == 1)
+                [predict_labels, accuracy, dec_value] = predict(ones(length(w_index),1), sparse(distance_vectors), metric_models(w).M, '-q');
+                %sort the neighbors according to ascend order
+                [v, v_index]= sort(dec_value, 1, 'descend');
+            elseif(metric_type == 2)
+                dec_value = sparse(distance_vectors) * metric_models(w).M';
+                dec_value(dec_value < 0) = Inf;
+                [v, v_index]= sort(dec_value, 1, 'ascend');
+            end
             
-            [v, v_index]= sort(dec_value, 1, 'descend');
 %             if v(1) == 0 % preserve from 2-N1+1
 %                 v_index_N1 = v_index(2:N1+1);
 %                 temp_index = w_index(v_index_N1);
@@ -193,8 +205,11 @@ function [sim_index, dist_score] = select_all_neighbors_metric(sample_vector, tr
     % return similar index and remove repeat index
     % ensure that the sim_index is sorted by distance ascend
     [unique_value, unique_index] = unique(distance_intra_label_index);
-    [v_u, v_u_index] = sort(distance_intra_label_score(unique_index), 1, 'descend');
-    
+    if(metric_type == 1)
+        [v_u, v_u_index] = sort(distance_intra_label_score(unique_index), 1, 'descend');
+    elseif (metric_type == 2)
+        [v_u, v_u_index] = sort(distance_intra_label_score(unique_index), 1, 'ascend');
+    end
     unique_temp = distance_intra_label_index(unique_index);
     unique_distance_temp = distance_intra_label_score(unique_index);
     

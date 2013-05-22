@@ -13,7 +13,8 @@ train_anno = double(vec_read(fullfile(IMAGE_ANNOTATION_DIR, 'corel5k_train_annot
 
 
 
-anno_score = zeros(D,W);
+anno_score = zeros(D, W);
+anno_score_decvalue = zeros(D, W);
 
 %learn method 1, label-based, one M for each label;  2, global-based one M
 %for all labels
@@ -123,7 +124,7 @@ elseif(learn_method == 4)
     %set model name
     model_dir = 'label_basedLRLINEAR';
     learned_model_name = 'label_basedLRLINEAR.mat';
-    load(fullfile(MODEL_DIR, model_dir, learned_model_name), 'label_model');
+    load(fullfile(MODEL_DIR, model_dir, learned_model_name));
     
     %load original multi-features of train and test set
     load(fullfile(RUN_DIR, Global.Train_Feature_Dir, 'train_multifeature_corel5k.mat'));
@@ -171,6 +172,57 @@ elseif(learn_method == 4)
         end
     end
     
+elseif(learn_method == 6) %label-based LMNN 
+    %set model name
+    model_dir = 'label_basedLMNN';
+    learned_model_name = 'label_basedLMNN.mat';
+    load(fullfile(MODEL_DIR, model_dir, learned_model_name));
+    
+    %load original multi-features of train and test set
+    load(fullfile(RUN_DIR, Global.Train_Feature_Dir, 'train_multifeature_corel5k.mat'));
+    load(fullfile(RUN_DIR, Global.Test_Dir, 'test_multifeature_corel5k.mat'));
+    
+    for d = 1:D   
+        %get d-th test vector
+        test_vector = extract_index_samples(d, test_samples); %a struct
+        %select top nn neighbors to predict
+        if(Global.Test_Neighbors == 0)
+            nn = length(test_sample_pairs{d});
+        else
+            nn = Global.Test_Neighbors;
+        end
+        
+        for i = 1 : nn
+            %caculate distance between current test image and its i neighbor
+            neighbor_index = test_sample_pairs{d}(i).img2.id;
+            neighbor_vector = extract_index_samples(neighbor_index,train_samples);
+
+            %find anno in neighbor image
+            anno_index = find(train_anno(neighbor_index,:) ~= 0);
+            for j = 1 : length(anno_index)
+                %calculate similarity prob through basic distance
+                base_dis = base_distance_vector(test_vector, neighbor_vector);
+                
+                if(~isempty(label_model(anno_index(j)).M))
+                    %similar pair, calculate prob
+                    
+%                         [predict_label, accuracy, dec_value] = ...
+%                             predict([1], sparse(base_dis),label_model(anno_index(j)).M,'-q');
+                        dec_value = label_model(anno_index(j)).M * base_dis';
+%                     if (dec_value < 0)
+%                         fprintf('sample %d, label %d, distance value is negative: %f \n', d, anno_index(j), dec_value);        
+%                         continue;
+%                     end
+                    anno_score(d, anno_index(j)) = anno_score(d, anno_index(j)) - dec_value;      
+                    anno_score_decvalue(d, anno_index(j)) = anno_score_decvalue(d, anno_index(j)) + exp(-dec_value);
+                end
+            end
+        end
+        
+        if mod(d, 50) == 0
+            fprintf('predict %d test samples finished!\n', d);
+        end
+    end
     
 end
 
