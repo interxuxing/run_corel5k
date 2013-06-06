@@ -27,13 +27,15 @@ Global.Semantic_Neighbor = 4;
 %% subdirectory, file prefix and file extension of images 
 Global.Image_Dir_Name = 'images';
 Global.Image_File_Name = 'image_';
-%%% changing the extension changes to image format used...
+%% changing the extension changes to image format used...
 Global.Image_Extension = '.jpg';
 Global.Train_Feature_Dir = 'train_feature';
 Global.Test_Dir = 'test';
-Global.Test_Neighbors = 0;
-% Global.Metric: label-basedLRLINEAR, label_basedLMNN, base
-Global.Metric = 'label-basedLMNN';
+Global.Test_Neighbors = 40;
+Global.Feature_Type = {'hue','sift','gist','hsv','lab','rgb'};
+Global.Feature_Dim = [100, 1000, 512, 4096, 4096, 4096];  %hue, sift, gist, hsv, lab, rgb
+%% Global.Metric: label-basedLRLINEAR, label_basedLMNN, base
+Global.Metric = 'base';
 Global.Random_Rate = 1.0;
 
 %% multiple feature extraction (train, train_subset, test)
@@ -41,19 +43,17 @@ Global.Multiple_Feature = 'test';
 %% multiple feature scale type (normalize, scale)
 Global.Feature_Scale = 'scale'; 
 %% learn method
-% 4, label-based liblinear 6, label-based lmnn
-Global.Learn_method = 6;
-
-
+% 4, label-based liblinear 6, label-based lmnn,  7, label-based lmnn (pegasos)
+Global.Learn_method = 4;
 Global.Max_Iteration = 500;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% INITIAL ADDITIONAL PATH
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ROOT_DIR = 'C:\workspace\program\image-annotation\iciap2013\labelknn';
-
-TOOLBOX_DIR = fullfile(ROOT_DIR, 'toolbox');
-addpath(genpath(TOOLBOX_DIR));
-
-TOOLBOX_DIR = fullfile(ROOT_DIR, 'toolbox','pwmetric');
-addpath(genpath(TOOLBOX_DIR));
-
+% ROOT_DIR = 'C:\workspace\program\image-annotation\iciap2013\labelknn';
+% 
+% TOOLBOX_DIR = fullfile(ROOT_DIR, 'toolbox');
+% addpath(genpath(TOOLBOX_DIR));
+% 
+% TOOLBOX_DIR = fullfile(ROOT_DIR, 'toolbox','pwmetric');
+% addpath(genpath(TOOLBOX_DIR));

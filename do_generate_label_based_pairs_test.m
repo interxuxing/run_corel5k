@@ -27,7 +27,7 @@ function do_generate_label_based_pairs_test(config_file)
     load(fullfile(RUN_DIR, Global.Train_Feature_Dir, 'train_multifeature_corel5k.mat'));
     load(fullfile(RUN_DIR, Global.Test_Dir, 'test_multifeature_corel5k.mat'));
     
-    N1 = 2;
+    N1 = 4;
     
     tstart = tic;
     
@@ -70,14 +70,14 @@ function do_generate_label_based_pairs_test(config_file)
     end
     
     toc(tstart);
-    
+    fprintf('finished generate semantic neighborhood for test samples, taking time %f \n', toc(tstart));
     %% save test sample pairs
     if ~exist(fullfile(RUN_DIR, Global.Test_Dir), 'dir')
         mkdir(fullfile(RUN_DIR, Global.Test_Dir));
     end
      
     save(fullfile(RUN_DIR, Global.Test_Dir, 'corel5k_test_pairs.mat'), 'test_sample_pairs' , 'test_sample_dist_score');
-    
+    fprintf('finshed save neighbor informations for test samples! \n');
 end
 
 %%
@@ -224,13 +224,21 @@ end
 
 %%
 function set_samples = extract_set_samples(sample_index, train_samples)
-    set_samples.denseHUE = train_samples.denseHUE(sample_index,:);
-    set_samples.denseSIFT = train_samples.denseSIFT(sample_index,:);
-    set_samples.GIST = train_samples.GIST(sample_index,:);
-    set_samples.HSV = train_samples.HSV(sample_index,:);
-    set_samples.LAB = train_samples.LAB(sample_index,:);
-    set_samples.RGB = train_samples.RGB(sample_index,:);
+%     set_samples.denseHUE = train_samples.denseHUE(sample_index,:);
+%     set_samples.denseSIFT = train_samples.denseSIFT(sample_index,:);
+%     set_samples.GIST = train_samples.GIST(sample_index,:);
+%     set_samples.HSV = train_samples.HSV(sample_index,:);
+%     set_samples.LAB = train_samples.LAB(sample_index,:);
+%     set_samples.RGB = train_samples.RGB(sample_index,:);
 
+    set_samples.denseHUE = train_samples.denseHUE(sample_index,:);
+    set_samples.alpha_denseHUE = train_samples.alpha_denseHUE;
+    
+    set_samples.denseSIFT = train_samples.denseSIFT(sample_index,:);
+    set_samples.alpha_denseSIFT = train_samples.alpha_denseSIFT;
+    
+    set_samples.GIST = train_samples.GIST(sample_index,:);
+    set_samples.alpha_GIST = train_samples.alpha_GIST;
 end
 
 %%

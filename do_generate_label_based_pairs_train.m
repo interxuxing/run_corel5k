@@ -50,7 +50,9 @@ function do_generate_label_based_pairs_train(config_file)
 %             lasterr
 %         end
 %     end
-    if 0
+    % find neighbors for each sample in each semantic cluster
+    fprintf('1. find neighbors for each sample in training set..... \n');
+    if 1
     for s = 1 : length(subset_unique_index)
         label_pairs = [];
         
@@ -84,7 +86,8 @@ function do_generate_label_based_pairs_train(config_file)
         end
     end
     end
-    
+    fprintf('finished find neighbors for each training sample! \n');
+    fprintf('2. allocate each sample to each semantic cluster..... \n');
     if 1
     %% loop for each label group, then copy each mat for sample_dir to each label dir
     for w = 1 : W
@@ -121,6 +124,7 @@ function do_generate_label_based_pairs_train(config_file)
     end
     
     toc(tstart);
+    fprintf('\nFinsihed generate semantic neighbors for each training sample! \n');
     end
 end
 
@@ -234,12 +238,21 @@ end
 %% this function is to extract multifeature structures for indexed imgs
 function set_samples = extract_set_samples(sample_index, train_samples)
 
+%     set_samples.denseHUE = train_samples.denseHUE(sample_index,:);
+%     set_samples.denseSIFT = train_samples.denseSIFT(sample_index,:);
+%     set_samples.GIST = train_samples.GIST(sample_index,:);
+%     set_samples.HSV = train_samples.HSV(sample_index,:);
+%     set_samples.LAB = train_samples.LAB(sample_index,:);
+%     set_samples.RGB = train_samples.RGB(sample_index,:);
+
     set_samples.denseHUE = train_samples.denseHUE(sample_index,:);
+    set_samples.alpha_denseHUE = train_samples.alpha_denseHUE;
+    
     set_samples.denseSIFT = train_samples.denseSIFT(sample_index,:);
+    set_samples.alpha_denseSIFT = train_samples.alpha_denseSIFT;
+    
     set_samples.GIST = train_samples.GIST(sample_index,:);
-    set_samples.HSV = train_samples.HSV(sample_index,:);
-    set_samples.LAB = train_samples.LAB(sample_index,:);
-    set_samples.RGB = train_samples.RGB(sample_index,:);
+    set_samples.alpha_GIST = train_samples.alpha_GIST;
 
 end
 
