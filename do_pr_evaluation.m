@@ -122,7 +122,7 @@ total_anno = (document_number  - length(find(sum(word_matrix_gt,2) == 0))) * 5;
 Mean_MAP = MAP / total_anno;
 Mean_MAR = MAP / total_words;
 N_words = length(unique(prob_index_tp5(:)));
-fprintf(sprintf('Evaluation using distance scheme: P %f, R %f, MAP %d, N+ %d\n',Mean_MAP, Mean_MAR, MAP, N_words));
+fprintf(sprintf('Evaluation using distance scheme: P %f, R %f, MAP %d / Total %d, N+ %d\n',Mean_MAP, Mean_MAR, MAP,total_words, N_words));
 
 
 %% another evalution method, statistics for each dict word
@@ -133,6 +133,6 @@ for d = 1 : document_number
     wPred(d, prob_index_tp5(d,:)) = 1;
 end
 
-[P,R,mAP, mAR] = evalRetrieval(wPred, word_matrix_gt);
+[P,R,mAP, mAR, mAP_Ret,mAR_Ret] = evalRetrieval(wPred, word_matrix_gt);
 
-fprintf(sprintf('Evaluation using global scheme: mAP %f, mAR %f \n',mAP, mAR));
+fprintf(sprintf('Evaluation using global scheme: mAP %f, mAR %f , mAP_Ret %f, mAR_Ret %f  \n',mAP, mAR, mAP_Ret, mAR_Ret));

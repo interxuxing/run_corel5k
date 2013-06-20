@@ -42,12 +42,12 @@ end
 % vector Nx1
 
 %L2 for global feature GIST
-dist_score_GIST = GetL2Dist(set_vector.GIST, sample_vector.GIST, set_vector.alpha_GIST.alpha_sum);
+dist_score_GIST = GetL2Dist(set_vector.GIST, sample_vector.GIST, set_vector.alpha_GIST);
 
 %L1 for textual feature SIFT, HUE
-dist_score_SIFT = GetL1Dist(set_vector.denseSIFT ,sample_vector.denseSIFT, set_vector.alpha_denseSIFT.alpha_sum);
+dist_score_SIFT = GetL1Dist(set_vector.denseSIFT ,sample_vector.denseSIFT, set_vector.alpha_denseSIFT);
 
-dist_score_HUE = GetL1Dist(set_vector.denseHUE, sample_vector.denseHUE, set_vector.alpha_denseHUE.alpha_sum);
+dist_score_HUE = GetL1Dist(set_vector.denseHUE, sample_vector.denseHUE, set_vector.alpha_denseHUE);
 
 %merge the final base distance score use inter_weights
 dist_score = [dist_score_GIST, dist_score_SIFT, dist_score_HUE] * inter_weights';

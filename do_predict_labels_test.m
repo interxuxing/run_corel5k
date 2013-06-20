@@ -275,6 +275,7 @@ elseif(learn_method == 7) % label-based LMNN pegasos
         if mod(d, 50) == 0
             fprintf('predict %d test samples finished!\n', d);
         end
+        anno_score(anno_score == 0) = -Inf;
     end
 end
 
@@ -326,8 +327,8 @@ function [varargout] = GetL1Dist(hist1, hist2, alpha,weights)
 % return: dist nx1, vect nxk
 vect = bsxfun(@times, abs(hist1 - hist2), weights);
 
-dist = sum(vect, 2) / alpha.alpha_sum;
-
+% dist = sum(vect, 2) / alpha.alpha_sum;
+dist = sum(vect, 2);
 if nargout == 1 %only output dist
     varargout{1} = dist;
 elseif nargout == 2 % output dist and vect
@@ -345,8 +346,8 @@ vect = abs(hist1 - hist2);
 vect = vect.^2;
 vect = bsxfun(@times, vect, weights);
 % normalize, assume that each feature contributes equally
-dist = sum(vect, 2) / alpha.alpha_sum;
-
+% dist = sum(vect, 2) / alpha.alpha_sum;
+dist = sum(vect, 2);
 if nargout == 1 %only output dist
     varargout{1} = dist;
 elseif nargout == 2 % output dist and vect

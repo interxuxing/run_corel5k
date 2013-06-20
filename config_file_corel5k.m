@@ -21,6 +21,7 @@ MODEL_DIR = 'D:\workspace-limu\image annotation\iciap2013\labelknn\run_corel5k\m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% GLOBAL PARAMETERS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global Global;
 %% how many zeros to prefix image, interest and model files by....
 Global.Num_Zeros = 4;
 Global.Semantic_Neighbor = 4;
@@ -31,7 +32,7 @@ Global.Image_File_Name = 'image_';
 Global.Image_Extension = '.jpg';
 Global.Train_Feature_Dir = 'train_feature';
 Global.Test_Dir = 'test';
-Global.Test_Neighbors = 40;
+Global.Test_Neighbors = 1;
 Global.Feature_Type = {'hue','sift','gist','hsv','lab','rgb'};
 Global.Feature_Dim = [100, 1000, 512, 4096, 4096, 4096];  %hue, sift, gist, hsv, lab, rgb
 %% Global.Metric: label-basedLRLINEAR, label_basedLMNN, base
@@ -44,7 +45,7 @@ Global.Multiple_Feature = 'test';
 Global.Feature_Scale = 'scale'; 
 %% learn method
 % 4, label-based liblinear 6, label-based lmnn,  7, label-based lmnn (pegasos)
-Global.Learn_method = 4;
+Global.Learn_method = 7;
 Global.Max_Iteration = 500;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

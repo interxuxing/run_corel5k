@@ -55,6 +55,7 @@ for i = 1:L
     for j = 1 : 3
         weights.w(j) = 1;
         weights.v{j} = ones(1, Global.Feature_Dim(j)) / Global.Feature_Dim(j); 
+%         weights.v{j} = ones(1, Global.Feature_Dim(j));
     end
     
     label_model(i) = learn_metric_pegasos(Fea, Fea_Alpha, inxa', inxb', matches', weights, Fea_Type);
@@ -145,6 +146,7 @@ function metric = learn_metric_pegasos(Features, Alpha, I_q, I_pn, matches, weig
 %   I_pn is targets / imposters indexes of each query image
 %   matches is a logical vector with 1 target 0 imposter
 %   weights contains inter weights w, intra weights v.
+global Global;
 
 if(size(matches,1)~= size(I_q,1) || size(matches,1)~= size(I_q,1) || size(I_pn,1)~= size(I_q,1))
     fprintf('\nError: Number of elements in X and Y must same\nSee pegasos usage for further help\n');
@@ -152,9 +154,11 @@ if(size(matches,1)~= size(I_q,1) || size(matches,1)~= size(I_q,1) || size(I_pn,1
 end
 
 % inital some parameters
-maxIter = 300;
-lambda = 1; k = ceil(0.5*size(matches,1));
-Tolerance=10^-4;
+maxIter = 1000;
+lambda_w = 1 / 9; 
+lambda_v = 1;
+k = ceil(0.5*size(matches,1));
+Tolerance=10^-5;
 
 %% optimize inter feature w and v alternatively
 fprintf('first optimize inter feature weights w: \n');
@@ -205,7 +209,7 @@ for t = 1 : maxIter
     D_qn = cell2mat(Dist_qn) * w(t,:)';
     idx1 = (D_qn - D_qp) < 0;
     
-    eta_t_w = 1e-2 / (lambda * t);
+    eta_t_w = 1e-3 / (lambda_w * t);
     m1 = length(idx_q_u);
     m2 = length(find(idx1 == 1));
     %updata w
@@ -213,39 +217,50 @@ for t = 1 : maxIter
 %         w1(j) = weights.w(j) - (eta_t/Alpha{j})*sum(Dist_qp_u{j},1) - (eta_t/Alpha{j})*sum(Dist_qp{j}(idx1,:) - Dist_qn{j}(idx1,:), 1);
           w1(j) = weights.w(j) - (eta_t_w)*sum(Dist_qp_u{j},1) - (eta_t_w)*sum(Dist_qp{j}(idx1,:) - Dist_qn{j}(idx1,:), 1);
     end
-    w1(w1<=0) = 0;
+    w1(w1<=0) = eps;
+    w1 = min(3, 1/(sqrt(lambda_w)*norm(w1,1))) * w1;
     w(t+1,:) = normalize(w1, 2)*3;
     norm_value_w = norm(w(t+1,:)-w(t,:));
     
     % update v
     wT = w(end,:);
     weights.w = wT';
+    
     % calulate hinge loss index
     D_qp = cell2mat(Dist_qp) * wT';
     D_qn = cell2mat(Dist_qn) * wT';
     idx1 = (D_qn - D_qp) < 0;
     
-    eta_t_v = 1e-3 / (lambda * t);
+    eta_t_v = 1e-2 / (lambda_v * t);
     m1 = length(idx_q_u);
     m2 = length(find(idx1 == 1));
     %updata w
     for j = 1 : length(weights.w)
         v1{j} = weights.v{j} - wT(j)*(eta_t_v)*sum(Vect_qp_u{j},1) - wT(j)*(eta_t_v)*sum(Vect_qp{j}(idx1,:) - Vect_qn{j}(idx1,:), 1);
-        v1{j}(v1{j} <= 0) = 0;
+        v1{j}(v1{j} <= 0) = eps;
+        v1{j} = min(1, 1/(sqrt(lambda_v)*norm(v1{j},1))) * v1{j};
         v1{j} = normalize(v1{j},2);
     end
     weights.v = v1;
     v(t+1,:) = cell2mat(v1);
-    
+
+    % caculate Eloss
+%     Eloss_1 = cell2mat(Dist_qp_u) * wT';
+%     Eloss_2 = D_qn - D_qp; 
+%     Eloss_2 = Eloss_2(Eloss_2 > -1);
+%     Eloss_2 = Eloss_2 + 1;
+%     Eloss =  sum(Eloss_1,1) + sum(Eloss_2,1)
     
     norm_value_v = norm(v(t+1,:)-v(t,:)); 
     if(norm_value_w < Tolerance && norm_value_v < Tolerance)
         fprintf('   calculate w and v converged in %d iteration! \n', t);
         break;
     end
+
     if(mod(t, 100) == 0)
         fprintf('\n  iteration # %d/%d, norm value w: %f, v: %f \n',t,maxIter, norm_value_w, norm_value_v);
         fprintf('    constrains: %d in total %d pairs. \n', m2, length(idx1));
+        wT = w(end,:)
     end
     
 end
@@ -285,8 +300,10 @@ function [dist,vect] = GetL1Dist_Vect(hist1, hist2, alpha, weights)
 % return: dist nx1, vect nxk
 vect = bsxfun(@times, abs(hist1 - hist2), weights);
 
-dist = sum(vect, 2) / alpha.alpha_sum;
-vect = bsxfun(@rdivide, vect, alpha.alpha_v);
+% dist = sum(vect, 2) / alpha.alpha_sum;
+% vect = bsxfun(@rdivide, vect, alpha.alpha_v);
+
+dist = sum(vect, 2);
 
 end
 
@@ -297,8 +314,9 @@ vect = vect.^2;
 vect = bsxfun(@times, vect, weights);
 % normalize, assume that each feature contributes equally
 
-dist = sum(vect, 2) / alpha.alpha_sum;
-vect = bsxfun(@rdivide, vect, alpha.alpha_v);
+% dist = sum(vect, 2) / alpha.alpha_sum;
+% vect = bsxfun(@rdivide, vect, alpha.alpha_v);
+dist = sum(vect, 2);
 end
 
 function [dist,vect] = GetchiSquareDist_Vect(his1,his2, weights)

@@ -16,17 +16,19 @@ if(nargin == 1)     % do not scale, just return original feature and alpha
     minF = min(oldFea);
     maxF = max(oldFea);
     maxDist = maxF - minF;
-    maxDist(maxDist == 0) = Inf;    
-    newFea = bsxfun(@rdivide,oldFea, maxDist);
-    
-    minF = min(newFea);
-    maxF = max(newFea);
-    maxDist = maxF - minF;
-    
-    alpha.alpha_v = maxDist; 
-    alpha.alpha_v(alpha.alpha_v == 0) = Inf;
+%     maxDist(maxDist == 0) = Inf;  
     
     alpha.alpha_sum = sum(maxDist);
+    newFea = bsxfun(@rdivide,oldFea, maxDist);
+    
+%     minF = min(newFea);
+%     maxF = max(newFea);
+%     maxDist = maxF - minF;
+%     
+%     alpha.alpha_v = maxDist; 
+%     alpha.alpha_v(alpha.alpha_v == 0) = Inf;
+    
+    
     
 elseif(nargin == 3)
     [N P] = size(oldFea);
