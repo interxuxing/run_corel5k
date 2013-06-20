@@ -42,7 +42,7 @@ elseif(nargin == 3)
         (oldFea - repmat(minF, N, 1)) ./ repmat(maxDist, N, 1) + new_min;
 
     %if newFea = NaN, set it to be 0
-    newFea(isnan(newFea)) = 0;
+    newFea(isnan(newFea)) = 0; 
 else
     display('myToolbox:myFunction:fileNotFound');
     return;

@@ -152,7 +152,7 @@ if(size(matches,1)~= size(I_q,1) || size(matches,1)~= size(I_q,1) || size(I_pn,1
 end
 
 % inital some parameters
-maxIter = 300;
+maxIter = 1000;
 lambda = 1; k = ceil(0.5*size(matches,1));
 Tolerance=10^-4;
 
